@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { signOut, useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
-import { Home, Search, Heart, Bookmark, PenSquare } from "lucide-react";
+import { Home, Search, Heart, Bookmark, PenSquare, LogOut } from "lucide-react";
 
 import { Logo } from ".";
 import useHamburgerMenuStore from "@/store/hamburger-menu-store";
@@ -38,10 +39,11 @@ const Sidebar = () => {
 
   const pathname = usePathname();
   const { isMenuOpen } = useHamburgerMenuStore();
+  const { data: session } = useSession();
 
   return (
     <aside
-      className={`fixed top-0 h-screen z-50 w-[70%] lg:w-[20%] lg:translate-x-0 bg-white flex flex-col border-r border-gray-200 duration-200 ease-in-out ${
+      className={`fixed top-0 h-screen z-50 w-[80%] lg:w-[20%] lg:translate-x-0 bg-white flex flex-col border-r border-gray-200 duration-200 ease-in-out ${
         isMenuOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >
@@ -62,12 +64,22 @@ const Sidebar = () => {
           </Link>
         ))}
       </div>
-      <Link
-        href={`${pathname}?auth_modal=y&variant=login`}
-        className='py-3 w-4/5 border border-lime-400 hover:bg-lime-500 text-gray-700 text-center rounded-full mx-auto mt-auto mb-16 font-semibold'
-      >
-        Masuk
-      </Link>
+      {session?.user ? (
+        <button
+          onClick={() => signOut()}
+          className='auth-btn flex-center border-red-600 hover:bg-red-600 gap-3'
+        >
+          <LogOut />
+          Keluar
+        </button>
+      ) : (
+        <Link
+          href={`${pathname}?auth_modal=y&variant=login`}
+          className='auth-btn border-lime-400 hover:bg-lime-500'
+        >
+          Masuk
+        </Link>
+      )}
     </aside>
   );
 };

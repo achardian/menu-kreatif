@@ -14,4 +14,8 @@
   .auth-input {
     @apply w-full lg:w-4/5 outline-none px-5 py-3 border border-gray-200 rounded-full;
   }
+
+  .auth-btn {
+    @apply py-3 w-4/5 border-2 text-gray-700 hover:text-gray-50 text-center rounded-full mx-auto mt-auto mb-16 font-semibold;
+  }
 }

@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { X } from "lucide-react";
+import { signIn } from "next-auth/react";
 
 import { Logo } from "..";
 
@@ -68,6 +69,7 @@ const AuthModal = () => {
         <button
           type='button'
           className='flex-center gap-3 w-full lg:w-4/5 rounded-full py-3 border border-gray-200'
+          onClick={() => signIn("google", { callbackUrl: pathname })}
         >
           <Image
             src='/google-icon.svg'
