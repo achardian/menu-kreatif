@@ -6,4 +6,12 @@
   .hamburger-menu {
     @apply h-[5px] w-[30px] bg-lime-400 duration-150 ease-in-out;
   }
+
+  .flex-center {
+    @apply flex justify-center items-center;
+  }
+
+  .auth-input {
+    @apply w-full lg:w-4/5 outline-none px-5 py-3 border border-gray-200 rounded-full;
+  }
 }

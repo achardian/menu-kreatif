@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Home, Search, Heart, Bookmark, PenSquare } from "lucide-react";
 
 import { Logo } from ".";
-import { usePathname } from "next/navigation";
 import useHamburgerMenuStore from "@/store/hamburger-menu-store";
 
 const Sidebar = () => {
@@ -62,6 +62,12 @@ const Sidebar = () => {
           </Link>
         ))}
       </div>
+      <Link
+        href={`${pathname}?auth_modal=y&variant=login`}
+        className='py-3 w-4/5 border border-lime-400 hover:bg-lime-500 text-gray-700 text-center rounded-full mx-auto mt-auto mb-16 font-semibold'
+      >
+        Masuk
+      </Link>
     </aside>
   );
 };

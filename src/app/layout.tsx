@@ -1,4 +1,4 @@
-import { Navbar, Sidebar } from "@/components";
+import { AuthModal, Navbar, Sidebar } from "@/components";
 import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -24,6 +24,7 @@ export default function RootLayout({
           <Navbar />
           {children}
         </div>
+        <AuthModal />
       </body>
     </html>
   );
