@@ -10,12 +10,13 @@ import {
 } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Loader, X } from "lucide-react";
+import { X } from "lucide-react";
 import { signIn } from "next-auth/react";
 import axios, { AxiosError } from "axios";
 import toast from "react-hot-toast";
 import ToasterProvider from "@/providers/toaster-provider";
 import { useMutation } from "react-query";
+import { Loader } from "..";
 
 import { Logo } from "..";
 import generateRandomAvatar from "@/libs/random-avatar";
@@ -49,18 +50,41 @@ const AuthModal = () => {
     return data;
   };
 
-  const { isLoading, mutate } = useMutation(createUser, {
-    onSuccess: (data) => {
-      toast.success(data);
-      setUserData({
-        username: "",
-        email: "",
-        password: "",
-      });
+  const login = async () => {
+    const res = await signIn("credentials", {
+      email: userData.email,
+      password: userData.password,
+      callbackUrl: pathname,
+    });
+
+    return res;
+  };
+
+  const { isLoading: isCreating, mutate: mutateUser } = useMutation(
+    createUser,
+    {
+      onSuccess: (data) => {
+        toast.success(data);
+        setUserData({
+          username: "",
+          email: "",
+          password: "",
+        });
+      },
+      onError: (error) => {
+        const err = error as AxiosError;
+        toast.error(err.response?.data as string);
+      },
+    }
+  );
+
+  const { isLoading: isTyringLogin, mutate: mutateLogin } = useMutation(login, {
+    onSuccess: () => {
+      toast.success("Berhasil masuk ke menu kreatif!");
     },
-    onError: (error) => {
-      const err = error as AxiosError;
-      toast.error(err.response?.data);
+    onError: (data) => {
+      const err = data as Error;
+      toast.error(err.message);
     },
   });
 
@@ -68,9 +92,15 @@ const AuthModal = () => {
     e.preventDefault();
     if (authVariantParam === "register") {
       if (userData.username && userData.password && userData.email) {
-        mutate();
+        mutateUser();
       } else {
-        toast.error("Make sure to fill all fields!");
+        toast.error("Pastikan untuk mengisi semua bidang formulir!");
+      }
+    } else {
+      if (userData.email && userData.password) {
+        mutateLogin();
+      } else {
+        toast.error("Pastikan untuk mengisi semua bidang formulir!");
       }
     }
   };
@@ -130,8 +160,11 @@ const AuthModal = () => {
             value={userData.password}
             onChange={handleUserData}
           />
-          <button className='w-full lg:w-4/5 bg-lime-500 hover:bg-lime-400 rounded-full py-3 text-white font-bold flex-center gap-3'>
-            {isLoading && <Loader />}
+          <button
+            disabled={isCreating || isTyringLogin}
+            className='w-full lg:w-4/5 disabled:bg-lime-400 bg-lime-500 hover:bg-lime-400 rounded-full py-3 text-white font-bold flex-center gap-3'
+          >
+            {isCreating || (isTyringLogin && <Loader />)}
             {authVariantParam === "login" ? "Masuk" : "Daftar"}
           </button>
           <small>
