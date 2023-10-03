@@ -67,7 +67,7 @@ const Sidebar = () => {
       {session?.user ? (
         <button
           onClick={() => signOut()}
-          className='auth-btn flex-center border-red-600 hover:bg-red-600 gap-3'
+          className='auth-btn flex-center bg-red-600 text-white border-red-500  gap-3'
         >
           <LogOut />
           Keluar

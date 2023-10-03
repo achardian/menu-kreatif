@@ -3,6 +3,8 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import AuthProvider from "@/providers/auth-provider";
+import ToasterProvider from "@/providers/toaster-provider";
+import QueryProvider from "@/providers/query-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,13 +23,16 @@ export default function RootLayout({
     <html lang='en'>
       <body className={inter.className}>
         <AuthProvider>
-          <Sidebar />
-          <div className='ml-0 lg:ml-[20%]'>
-            <Navbar />
-            {children}
-          </div>
-          <AuthModal />
+          <QueryProvider>
+            <Sidebar />
+            <div className='ml-0 lg:ml-[20%]'>
+              <Navbar />
+              {children}
+            </div>
+            <AuthModal />
+          </QueryProvider>
         </AuthProvider>
+        <ToasterProvider />
       </body>
     </html>
   );

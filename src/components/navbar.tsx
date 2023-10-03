@@ -15,7 +15,7 @@ const Navbar = () => {
   const pathname = usePathname();
 
   return (
-    <nav className='w-full h-20 flex justify-between items-center gap-5 border-b border-gray-200 px-5'>
+    <nav className='w-full h-20 flex justify-between items-center gap-5 bg-white border-b border-gray-200 px-5'>
       <div className='w-full hidden lg:flex'>
         <SearchBar />
       </div>
