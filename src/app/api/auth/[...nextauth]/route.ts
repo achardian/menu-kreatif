@@ -3,7 +3,6 @@ import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import prismaClient from "@/libs/prisma-client";
 import Credentials from "next-auth/providers/credentials";
-import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 
 const nextAuthOptions: AuthOptions = {
@@ -14,34 +13,36 @@ const nextAuthOptions: AuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     }),
     Credentials({
-      async authorize(credentials: { email: string; password: string }) {
-        const { email, password } = credentials;
-
+      credentials: {
+        email: { label: "Username", type: "text", placeholder: "jsmith" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials, req) {
         try {
           const user = await prismaClient.user.findUnique({
             where: {
-              email,
+              email: credentials?.email,
             },
           });
 
-          if (!user) throw Error("Pengguna tidak ditemukan!");
+          if (!user) return null;
 
           const isPasswordMatch = await bcrypt.compare(
-            password,
+            credentials?.password as string,
             user.password as string
           );
 
-          if (!isPasswordMatch) throw Error("Password salah!");
+          if (!isPasswordMatch) return null;
 
           return {
             id: user.id,
-            name: user.username,
+            name: user.name,
             email: user.email,
             image: user.image,
+            username: user.username as string,
           };
         } catch (error) {
-          const err = error as Error;
-          return NextResponse.json(err, { status: 500 });
+          return null;
         }
       },
     }),
@@ -51,7 +52,7 @@ const nextAuthOptions: AuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET as string,
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, profile }) {
       if (user) {
         token.id = user.id;
       }
@@ -59,7 +60,27 @@ const nextAuthOptions: AuthOptions = {
     },
 
     async session({ token, session }) {
+      const user = await prismaClient.user.findUnique({
+        where: {
+          email: token.email as string,
+        },
+      });
+
       session.user.id = token.id as string;
+      if (!user?.username) {
+        const username = user?.email?.split("@")[0] as string;
+        session.user.username = username;
+        await prisma?.user.update({
+          where: {
+            email: user?.email as string,
+          },
+          data: {
+            username,
+          },
+        });
+      }
+      session.user.username = user?.username as string;
+
       return session;
     },
   },
