@@ -65,8 +65,9 @@ model Recipe {
     title         String
     slug          String
     image         String
-    ingredients   String
-    instructions  String
+    ingredients   String[]
+    instructions  String[]
+    serving       String
     estimatedTime Int
     difficulty    String
     tags          String[]

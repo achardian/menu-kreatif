@@ -1,15 +1,23 @@
 "use client";
 
+import { Loader } from "@/components";
 import { difficulties, estimatedTimes, servings } from "@/constant";
+import uploadImage from "@/libs/cloudinary-upload";
+import generateSlug from "@/libs/generate-slug";
+import axios, { AxiosError } from "axios";
 import { ChefHat, Plus, Soup, Timer, UploadCloud, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { ChangeEvent, useRef, useState } from "react";
+import { ChangeEvent, SyntheticEvent, useRef, useState } from "react";
+import toast from "react-hot-toast";
+import { useMutation } from "react-query";
 
 const Upload = () => {
   const { data: session } = useSession();
   const [imgUrl, setImgUrl] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [fileSelected, setFileSelected] = useState<File | null>(null);
+  const [title, setTitle] = useState("");
   const [ingredient, setIngredient] = useState("");
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [instruction, setInstruction] = useState("");
@@ -25,21 +33,82 @@ const Upload = () => {
     const fr = new FileReader();
     if (file) {
       fr.readAsDataURL(file[0]);
+      setFileSelected(file[0]);
       fr.onload = (frEvent) => {
         setImgUrl(frEvent.target?.result as string);
       };
     }
   };
 
-  console.log(estimatedTime, difficulty, serving);
+  const uploadRecipe = async () => {
+    if (!fileSelected) return null;
+    const slug = generateSlug(title);
+    const image = await uploadImage(fileSelected);
+    const { data } = await axios.post("/api/upload", {
+      title,
+      image,
+      slug,
+      ingredients,
+      instructions,
+      estimatedTime,
+      difficulty,
+      serving,
+      tags,
+      userId: session?.user.id,
+    });
+
+    return data;
+  };
+
+  const { isLoading, mutateAsync } = useMutation(uploadRecipe, {
+    onSuccess: (data) => {
+      toast.success(data);
+    },
+    onError: (error) => {
+      const err = error as AxiosError;
+      toast.error(err.response?.data as string);
+    },
+  });
+
+  const handleSubmit = async (e: SyntheticEvent) => {
+    e.preventDefault();
+
+    if (
+      title &&
+      ingredients &&
+      instructions &&
+      estimatedTime &&
+      difficulty &&
+      serving &&
+      tags
+    ) {
+      await mutateAsync();
+
+      setTitle("");
+      setImgUrl("");
+      setEstimatedTime(15);
+      setDifficulty("mudah");
+      setServing("1 porsi");
+      setTags([]);
+      setIngredients([]);
+      setInstructions([]);
+    } else {
+      toast.error("Pastikan untuk mengisi semua bidang formulir!");
+    }
+  };
 
   return (
     <main className='p-10'>
-      <form className='w-full lg:w-[60%] mx-auto flex flex-col gap-8'>
+      <form
+        onSubmit={handleSubmit}
+        className='w-full lg:w-[60%] mx-auto flex flex-col gap-8'
+      >
         <input
           type='text'
           placeholder='Judul'
           className='font-bold text-2xl upload-input'
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
         />
         <input
           onChange={handleImgPreview}
@@ -225,7 +294,7 @@ const Upload = () => {
         <div className='mt-10'>
           <div className='flex items-center flex-wrap gap-3'>
             {tags.map((item) => (
-              <div className='flex-center gap-3 p-2 rounded-full bg-gray-100'>
+              <div className='flex-center gap-3 p-2 rounded-full bg-gray-100 capitalize'>
                 {item}
                 <button
                   type='button'
@@ -252,7 +321,7 @@ const Upload = () => {
               type='button'
               className='p-2 bg-lime-600 hover:bg-lime-500 text-white rounded-md'
               onClick={() => {
-                setTags((prevState) => [...prevState, tag]);
+                setTags((prevState) => [...prevState, tag.toLowerCase()]);
                 setTag("");
               }}
             >
@@ -263,8 +332,10 @@ const Upload = () => {
 
         <button
           type='submit'
-          className='py-2 px-5 flex-center gap-2 bg-red-600 hover:bg-red-500 text-white rounded-full font-bold'
+          disabled={isLoading}
+          className='py-2 px-5 flex-center gap-2 bg-red-600 hover:bg-red-500 disabled:bg-red-400 text-white rounded-full font-bold'
         >
+          {isLoading && <Loader />}
           <UploadCloud />
           Unggah Resep
         </button>
