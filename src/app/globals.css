@@ -18,4 +18,12 @@
   .auth-btn {
     @apply py-3 w-4/5 border-2 text-gray-700 hover:text-gray-50 text-center rounded-full mx-auto mt-auto mb-16 font-semibold;
   }
+
+  .upload-input {
+    @apply outline-none p-2 flex-1 border-b-2 border-gray-400 focus:border-lime-400 bg-transparent;
+  }
+
+  .select-input {
+    @apply text-lg px-3 py-2 outline-none bg-lime-300;
+  }
 }
