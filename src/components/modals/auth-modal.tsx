@@ -14,6 +14,8 @@ import { X } from "lucide-react";
 import { signIn } from "next-auth/react";
 import axios, { AxiosError } from "axios";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+
 import ToasterProvider from "@/providers/toaster-provider";
 import { useMutation } from "react-query";
 import { Loader } from "..";
@@ -24,6 +26,7 @@ import generateRandomAvatar from "@/libs/random-avatar";
 const AuthModal = () => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const router = useRouter();
   const authModalParam = searchParams.get("auth_modal");
   const authVariantParam = searchParams.get("variant");
   const authModalRef = useRef<HTMLDialogElement | null>(null);
@@ -42,6 +45,7 @@ const AuthModal = () => {
 
   const createUser = async () => {
     const avatar = generateRandomAvatar();
+    console.log(avatar);
     const { data } = await axios.post("/api/auth/register", {
       ...userData,
       image: avatar,
@@ -70,6 +74,7 @@ const AuthModal = () => {
           email: "",
           password: "",
         });
+        router.push(`${pathname}?auth_modal=y&variant=login`);
       },
       onError: (error) => {
         const err = error as AxiosError;
@@ -164,7 +169,7 @@ const AuthModal = () => {
             disabled={isCreating || isTyringLogin}
             className='w-full lg:w-4/5 disabled:bg-lime-400 bg-lime-500 hover:bg-lime-400 rounded-full py-3 text-white font-bold flex-center gap-3'
           >
-            {isCreating || (isTyringLogin && <Loader />)}
+            {(isCreating || isTyringLogin) && <Loader />}
             {authVariantParam === "login" ? "Masuk" : "Daftar"}
           </button>
           <small>
@@ -172,7 +177,9 @@ const AuthModal = () => {
               ? "Belum punya akun?"
               : "Sudah punya akun?"}{" "}
             <Link
-              href={`${pathname}?auth_modal=y&variant=register`}
+              href={`${pathname}?auth_modal=y&variant=${
+                authVariantParam === "login" ? "register" : "login"
+              }`}
               className='underline'
             >
               {authVariantParam === "login" ? "Daftar" : "Masuk"}
